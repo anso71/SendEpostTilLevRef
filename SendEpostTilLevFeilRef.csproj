@@ -8,7 +8,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>SendEpostTilLevFeilRef</RootNamespace>
-    <AssemblyName>SendEpostTilLevFeilRef</AssemblyName>
+    <AssemblyName>HLS_SendEpostTilLevFeilRef</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
