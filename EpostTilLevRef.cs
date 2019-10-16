@@ -54,6 +54,9 @@ namespace HLS_SendEpostTilLevFeilRef
             StringBuilder ReportText = new StringBuilder();
             StringBuilder ReportNotText = new StringBuilder();
 
+            ReportText.Append("Firma ");
+            ReportText.Append(_client);
+            ReportText.Append("\r\n");
             ReportText.Append("Epost sendt til følgende kunder: \r\n");
             ReportNotText.Append("Epost manglet på følgende kunder: \r\n");
             foreach (DataRow row in WrongApri.Rows)
@@ -71,21 +74,21 @@ namespace HLS_SendEpostTilLevFeilRef
                         if (!Sendt.ContainsKey(kundenr))
                         {
                             StringBuilder EpostText = new StringBuilder();
-                            EpostText.Append("Hei\r\n  Du får denne mailen da Deres Ref er feil på ordre: ");
+                            EpostText.Append("Hei\t\r\nDu får denne mailen da \"Deres Ref\" er feil på ordre: ");
                             EpostText.Append(row["invoice_id"]);
-                            EpostText.Append("\r\nMed forfall den: ");
+                            EpostText.Append("\t\r\nMed forfall den: ");
                             EpostText.Append(row["trans_date"]);
-                            EpostText.Append("\r\n \"Deres ref\" var satt til: ");
-                            EpostText.Append(row["a.ext_ord_ref"]);
-                            EpostText.Append("\r\n  Vi bruker ressurnr:  6 siffer");
-                            EpostText.Append("\r\n Vi håper Dere kan sette inn korrekt \"Deres Ref\" på neste regning\r\n");
-                            EpostText.Append("Med vennlig hilsen \r\n");
+                            EpostText.Append("\t\r\n\"Deres Ref\" var satt til: ");
+                            EpostText.Append(row["ext_ord_ref"]);
+                            EpostText.Append("\t\r\nVi bruker bare ressursnr som er 6 siffer");
+                            EpostText.Append("\t\r\nVi håper Dere kan sette inn korrekt \"Deres Ref\" på neste regning for å sikre raskere fakturabehandling\t\r\n\t\r\n");
+                            EpostText.Append("Med vennlig hilsen \t\r\n");
                             IStatement sqldescription = CurrentContext.Database.CreateStatement();
                             sqldescription.Append("select description from agldescription where dim_value= @client and client = @client and attribute_id='A3'");
                             sqldescription["client"] = _client;
                             string description = "";
                             CurrentContext.Database.ReadValue(sqldescription, ref description);
-                            EpostText.Append("Fakturaavdelingen \r\n");
+                            EpostText.Append("Fakturaavdelingen \t\r\n");
                             EpostText.Append(description);
                             Sendt.Add(kundenr, row["apar_id"].ToString());
                             _ein01.API.WriteLog(EpostText.ToString()); // for test
@@ -98,7 +101,7 @@ namespace HLS_SendEpostTilLevFeilRef
                                     ReportText.Append(row["apar_id"]);
                                     ReportText.Append(" gjelder ordernr: ");
                                     ReportText.Append(row["invoice_id"]);
-                                    ReportText.Append("\n");
+                                    ReportText.Append("\t\r\n");
                                 }
                                 else
                                 {
@@ -120,11 +123,11 @@ namespace HLS_SendEpostTilLevFeilRef
                 {
                     ReportNotText.Append("Kundenr: ");
                     ReportNotText.Append(row["apar_id"]);
-                    ReportNotText.Append("\r\n");
+                    ReportNotText.Append("\t\r\n");
                 }
 
             }
-            ReportText.Append("\r\n\r\n");
+            ReportText.Append("\t\r\n\t\r\n");
             ReportText.Append(ReportNotText.ToString());
             _ein01.API.WriteLog(ReportText.ToString());
             try
