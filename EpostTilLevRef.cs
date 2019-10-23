@@ -18,11 +18,17 @@ namespace HLS_SendEpostTilLevFeilRef
         private IReport _ein01;
         private String _client;
         private String _emailaddress;
+        private String _smtpaddress;
         public void Initialize(IReport ireport)
         {
             _ein01 = ireport;
             _client = _ein01.API.GetParameter("client");
             _emailaddress = _ein01.API.GetParameter("emailAdress");
+            _smtpaddress = _ein01.API.GetParameter("smtpAdress");
+            if (string.IsNullOrEmpty(_smtpaddress))
+            {
+                _smtpaddress = "32.1.20.6";
+            }
 
 
             _ein01.OnStop += _report_OnStop;
@@ -60,7 +66,7 @@ namespace HLS_SendEpostTilLevFeilRef
             ReportText.Append("Epost sendt til følgende kunder: \r\n");
             ReportNotText.Append("Epost manglet på følgende kunder: \r\n");
             SmtpClient SmtpServer = new SmtpClient();
-            SmtpServer.Host = "32.1.20.6";
+            SmtpServer.Host = _smtpaddress;      //"32.1.20.6";
             SmtpServer.Port = 25;
             SmtpServer.DeliveryMethod = System.Net.Mail.SmtpDeliveryMethod.Network;
 
@@ -101,13 +107,14 @@ namespace HLS_SendEpostTilLevFeilRef
                             epostaddress.Append("no-replay@");
                             epostaddress.Append(description.Replace("kommune","").Replace(" ","").Replace("ø","o"));
                             epostaddress.Append(".kommune.no");
+                           
                             MailMessage mail = new MailMessage();
                             
                             _ein01.API.WriteLog(epostaddress.ToString());
                             mail.From = new MailAddress(epostaddress.ToString());
                             Sendt.Add(kundenr, row["apar_id"].ToString());
                             _ein01.API.WriteLog(EpostText.ToString()); // for test
-                            mail.To.Add(email_address);
+                            mail.To.Add("andre.sollie@stange.kommune.no");
                             mail.Subject = "Feil i Deres Ref";
                             mail.IsBodyHtml = false;
                             mail.Body = EpostText.ToString();
@@ -115,6 +122,12 @@ namespace HLS_SendEpostTilLevFeilRef
                             try
                             {
                                 SmtpServer.Send(mail);
+                                ReportText.Append(email_address);
+                                ReportText.Append(" Kundnr: ");
+                                ReportText.Append(row["apar_id"]);
+                                ReportText.Append(" gjelder ordernr: ");
+                                ReportText.Append(row["invoice_id"]);
+                                ReportText.Append("\t\r\n");
                             }
                             catch (Exception ex)
                             {
@@ -162,7 +175,7 @@ namespace HLS_SendEpostTilLevFeilRef
             _ein01.API.WriteLog(ReportText.ToString());
             try
             {
-                if (_ein01.API.SendMail(ReportText.ToString(), "", "Report på hva som er sendt", "Report på hva som er sendt", "andre.sollie@stange.kommune.no", ""))
+                if (_ein01.API.SendMail(ReportText.ToString(), "", "Report på hva som er sendt", "Report på hva som er sendt", _emailaddress, ""))
                 {
                     _ein01.API.WriteLog("Report sendt");
                 }
