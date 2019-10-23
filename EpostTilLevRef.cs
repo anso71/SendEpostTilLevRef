@@ -59,6 +59,13 @@ namespace HLS_SendEpostTilLevFeilRef
             ReportText.Append("\r\n");
             ReportText.Append("Epost sendt til følgende kunder: \r\n");
             ReportNotText.Append("Epost manglet på følgende kunder: \r\n");
+            SmtpClient SmtpServer = new SmtpClient();
+            SmtpServer.Host = "32.1.20.6";
+            SmtpServer.Port = 25;
+            SmtpServer.DeliveryMethod = System.Net.Mail.SmtpDeliveryMethod.Network;
+
+
+
             foreach (DataRow row in WrongApri.Rows)
             {
                 IStatement sqlFindEmailfromAparid = CurrentContext.Database.CreateStatement();
@@ -90,9 +97,32 @@ namespace HLS_SendEpostTilLevFeilRef
                             CurrentContext.Database.ReadValue(sqldescription, ref description);
                             EpostText.Append("Fakturaavdelingen \t\r\n");
                             EpostText.Append(description);
+                            StringBuilder epostaddress = new StringBuilder();
+                            epostaddress.Append("no-replay@");
+                            epostaddress.Append(description.Replace("kommune","").Replace(" ","").Replace("ø","o"));
+                            epostaddress.Append(".kommune.no");
+                            MailMessage mail = new MailMessage();
+                            
+                            _ein01.API.WriteLog(epostaddress.ToString());
+                            mail.From = new MailAddress(epostaddress.ToString());
                             Sendt.Add(kundenr, row["apar_id"].ToString());
                             _ein01.API.WriteLog(EpostText.ToString()); // for test
+                            mail.To.Add(email_address);
+                            mail.Subject = "Feil i Deres Ref";
+                            mail.IsBodyHtml = false;
+                            mail.Body = EpostText.ToString();
+
                             try
+                            {
+                                SmtpServer.Send(mail);
+                            }
+                            catch (Exception ex)
+                            {
+                                _ein01.API.WriteLog("Exception Message: " + ex.Message);
+                                if (ex.InnerException != null)
+                                    _ein01.API.WriteLog("Exception Inner:   " + ex.InnerException);
+                            }
+                            /*try
                             {
                                 if (_ein01.API.SendMail(EpostText.ToString(), "", "Feil i Deres Ref", "Feil i Deres Ref", "andre.sollie@stange.kommune.no", ""))
                                 {
@@ -111,7 +141,7 @@ namespace HLS_SendEpostTilLevFeilRef
                             catch (IOException ei)
                             {
                                 _ein01.API.WriteLog("Epost ikke sendt grunnet exception :{0} {1}", email_address, ei.Source);
-                            }
+                            }*/
                         }
                         else
                         {
