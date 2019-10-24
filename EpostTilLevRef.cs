@@ -114,7 +114,7 @@ namespace HLS_SendEpostTilLevFeilRef
                             mail.From = new MailAddress(epostaddress.ToString());
                             Sendt.Add(kundenr, row["apar_id"].ToString());
                             _ein01.API.WriteLog(EpostText.ToString()); // for test
-                            mail.To.Add("andre.sollie@stange.kommune.no");
+                            mail.To.Add(email_address);
                             mail.Subject = "Feil i Deres Ref";
                             mail.IsBodyHtml = false;
                             mail.Body = EpostText.ToString();
@@ -135,26 +135,6 @@ namespace HLS_SendEpostTilLevFeilRef
                                 if (ex.InnerException != null)
                                     _ein01.API.WriteLog("Exception Inner:   " + ex.InnerException);
                             }
-                            /*try
-                            {
-                                if (_ein01.API.SendMail(EpostText.ToString(), "", "Feil i Deres Ref", "Feil i Deres Ref", "andre.sollie@stange.kommune.no", ""))
-                                {
-                                    ReportText.Append(email_address);
-                                    ReportText.Append(" Kundnr: ");
-                                    ReportText.Append(row["apar_id"]);
-                                    ReportText.Append(" gjelder ordernr: ");
-                                    ReportText.Append(row["invoice_id"]);
-                                    ReportText.Append("\t\r\n");
-                                }
-                                else
-                                {
-                                    _ein01.API.WriteLog("Feil med utsendelse av mail {0}", email_address);
-                                }
-                            }
-                            catch (IOException ei)
-                            {
-                                _ein01.API.WriteLog("Epost ikke sendt grunnet exception :{0} {1}", email_address, ei.Source);
-                            }*/
                         }
                         else
                         {
