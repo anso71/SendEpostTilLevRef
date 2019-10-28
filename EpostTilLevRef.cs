@@ -40,7 +40,7 @@ namespace HLS_SendEpostTilLevFeilRef
             IDictionary<int, string> Sendt = new Dictionary<int, string>();
 
             sqlwrongReffromAparid.Append("SELECT a.apar_id, b.apar_name, a.arrival_date, a.bank_account, a.batch_id, a.comments, a.contract_id, a.cur_amount, a.client, a.comp_reg_no,");
-            sqlwrongReffromAparid.Append("a.currency, a.due_date, a.ext_inv_ref, a.ext_ord_ref, a.invoice_id, a.kid,a.last_update, a.order_id, a.reg_amount, a.status, a.trans_date, a.tax_cur_amt,");
+            sqlwrongReffromAparid.Append("a.currency, a.due_date, a.ext_inv_ref, a.ext_ord_ref, a.invoice_id, a.kid,a.last_update, a.order_id,a.order_no, a.reg_amount, a.status, a.trans_date, a.tax_cur_amt,");
             sqlwrongReffromAparid.Append("a.queue_id, a.accounting_cost, a.contact_id, a.order_reference, a.contract_reference,a.metering_point_id, a.prepaid_amount, a.rounding_amount FROM a47en53invoiceheader");
             sqlwrongReffromAparid.Append(" a JOIN acrclient c ON a.client = c.client AND c.client IN(@client)");
             sqlwrongReffromAparid.Append(" LEFT OUTER JOIN asuheader b ON a.apar_id = b.apar_id AND b.client = c.pay_client AND");
@@ -88,7 +88,7 @@ namespace HLS_SendEpostTilLevFeilRef
                         {
                             StringBuilder EpostText = new StringBuilder();
                             EpostText.Append("Hei\t\r\nDu får denne mailen da \"Deres Ref\" er feil på ordre: ");
-                            EpostText.Append(row["invoice_id"]);
+                            EpostText.Append(row["order_no"]);
                             EpostText.Append("\t\r\nMed forfall den: ");
                             EpostText.Append(row["trans_date"]);
                             EpostText.Append("\t\r\n\"Deres Ref\" var satt til: ");
