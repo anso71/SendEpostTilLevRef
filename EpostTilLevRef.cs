@@ -126,7 +126,7 @@ namespace HLS_SendEpostTilLevFeilRef
                                 ReportText.Append(" Kundnr: ");
                                 ReportText.Append(row["apar_id"]);
                                 ReportText.Append(" gjelder ordernr: ");
-                                ReportText.Append(row["invoice_id"]);
+                                ReportText.Append(row["order_no"]);
                                 ReportText.Append("\t\r\n");
                             }
                             catch (Exception ex)
