@@ -84,61 +84,64 @@ namespace HLS_SendEpostTilLevFeilRef
                 {
                     if (Int32.TryParse(row["apar_id"].ToString(), out int kundenr))
                     {
-                        if (!Sendt.ContainsKey(kundenr))
+                        if (!Sentbefore(kundenr))
                         {
-                            StringBuilder EpostText = new StringBuilder();
-                            EpostText.Append("Hei\t\r\nDu får denne mailen da \"Deres Ref\" er feil på ordre: ");
-                            EpostText.Append(row["order_no"]);
-                            EpostText.Append("\t\r\nMed forfall den: ");
-                            EpostText.Append(row["trans_date"]);
-                            EpostText.Append("\t\r\n\"Deres Ref\" var satt til: ");
-                            EpostText.Append(row["ext_ord_ref"]);
-                            EpostText.Append("\t\r\nVi bruker bare ressursnr som er 6 siffer");
-                            EpostText.Append("\t\r\nVi håper Dere kan sette inn korrekt \"Deres Ref\" på neste regning for å sikre raskere fakturabehandling\t\r\n\t\r\n");
-                            EpostText.Append("Med vennlig hilsen \t\r\n");
-                            IStatement sqldescription = CurrentContext.Database.CreateStatement();
-                            sqldescription.Append("select description from agldescription where dim_value= @client and client = @client and attribute_id='A3'");
-                            sqldescription["client"] = _client;
-                            string description = "";
-                            CurrentContext.Database.ReadValue(sqldescription, ref description);
-                            EpostText.Append("Fakturaavdelingen \t\r\n");
-                            EpostText.Append(description);
-                            StringBuilder epostaddress = new StringBuilder();
-                            epostaddress.Append("no-replay@");
-                            epostaddress.Append(description.Replace("kommune","").Replace(" ","").Replace("ø","o"));
-                            epostaddress.Append(".kommune.no");
-                           
-                            MailMessage mail = new MailMessage();
-                            
-                            _ein01.API.WriteLog(epostaddress.ToString());
-                            mail.From = new MailAddress(epostaddress.ToString());
-                            Sendt.Add(kundenr, row["apar_id"].ToString());
-                            _ein01.API.WriteLog(EpostText.ToString()); // for test
-                            mail.To.Add(email_address);
-                            mail.Subject = "Feil i Deres Ref";
-                            mail.IsBodyHtml = false;
-                            mail.Body = EpostText.ToString();
+                            if (!Sendt.ContainsKey(kundenr))
+                            {
+                                StringBuilder EpostText = new StringBuilder();
+                                EpostText.Append("Hei\t\r\nDu får denne mailen da \"Deres Ref\" er feil på ordre med ordre referanse: ");
+                                EpostText.Append(row["ext_inv_ref"]);
+                                EpostText.Append("\t\r\nMed forfall den: ");
+                                EpostText.Append(row["due_date"]);
+                                EpostText.Append("\t\r\n\"Deres Ref\" var satt til: ");
+                                EpostText.Append(row["ext_ord_ref"]);
+                                EpostText.Append("\t\r\nVi bruker bare ressursnr som er 6 siffer");
+                                EpostText.Append("\t\r\nVi håper Dere kan sette inn korrekt \"Deres Ref\" på neste regning for å sikre raskere fakturabehandling\t\r\n\t\r\n");
+                                EpostText.Append("Med vennlig hilsen \t\r\n");
+                                IStatement sqldescription = CurrentContext.Database.CreateStatement();
+                                sqldescription.Append("select description from agldescription where dim_value= @client and client = @client and attribute_id='A3'");
+                                sqldescription["client"] = _client;
+                                string description = "";
+                                CurrentContext.Database.ReadValue(sqldescription, ref description);
+                                EpostText.Append("Regnskapsavdelingen \t\r\n");
+                                EpostText.Append(description);
+                                StringBuilder epostaddress = new StringBuilder();
+                                epostaddress.Append("no-replay@");
+                                epostaddress.Append(description.Replace("kommune", "").Replace(" ", "").Replace("ø", "o"));
+                                epostaddress.Append(".kommune.no");
 
-                            try
-                            {
-                                SmtpServer.Send(mail);
-                                ReportText.Append(email_address);
-                                ReportText.Append(" Kundnr: ");
-                                ReportText.Append(row["apar_id"]);
-                                ReportText.Append(" gjelder ordernr: ");
-                                ReportText.Append(row["order_no"]);
-                                ReportText.Append("\t\r\n");
+                                MailMessage mail = new MailMessage();
+
+                                _ein01.API.WriteLog(epostaddress.ToString());
+                                mail.From = new MailAddress(epostaddress.ToString());
+                                Sendt.Add(kundenr, row["apar_id"].ToString());
+                                _ein01.API.WriteLog(EpostText.ToString()); // for test
+                                mail.To.Add(email_address);
+                                mail.Subject = "Feil i Deres Ref";
+                                mail.IsBodyHtml = false;
+                                mail.Body = EpostText.ToString();
+
+                                try
+                                {
+                                    SmtpServer.Send(mail);
+                                    ReportText.Append(email_address);
+                                    ReportText.Append(" Kundnr: ");
+                                    ReportText.Append(row["apar_id"]);
+                                    ReportText.Append(" gjelder order med ordre referanse : ");
+                                    ReportText.Append(row["ext_inv_ref"]);
+                                    ReportText.Append("\t\r\n");
+                                }
+                                catch (Exception ex)
+                                {
+                                    _ein01.API.WriteLog("Exception Message: " + ex.Message);
+                                    if (ex.InnerException != null)
+                                        _ein01.API.WriteLog("Exception Inner:   " + ex.InnerException);
+                                }
                             }
-                            catch (Exception ex)
+                            else
                             {
-                                _ein01.API.WriteLog("Exception Message: " + ex.Message);
-                                if (ex.InnerException != null)
-                                    _ein01.API.WriteLog("Exception Inner:   " + ex.InnerException);
+                                _ein01.API.WriteLog("{0} har blitt sendt epost til", kundenr);
                             }
-                        }
-                        else
-                        {
-                            _ein01.API.WriteLog("{0} har blitt sendt epost til", kundenr);
                         }
                     }
                 }
@@ -169,6 +172,25 @@ namespace HLS_SendEpostTilLevFeilRef
                 _ein01.API.WriteLog("Report ikke sendt grunnet exeception : {0}", ei1.Source);
             }
 
+        }
+        private bool Sentbefore(int apar_id)
+        {
+            IStatement sqlCheckifaparidsentbefore = CurrentContext.Database.CreateStatement();
+            sqlCheckifaparidsentbefore.Append("select apar_id from aslevsendt where apar_id = @apar_id");
+            sqlCheckifaparidsentbefore["apar_id"] = apar_id;
+            string aparid = "";
+            _ein01.API.WriteLog("Sjekker om den er inne fra før");
+            CurrentContext.Database.ReadValue(sqlCheckifaparidsentbefore, ref aparid);
+            if (!string.IsNullOrEmpty(aparid))
+                return true;
+
+            IStatement sqlAddaparid = CurrentContext.Database.CreateStatement();
+            sqlAddaparid.Append("insert into aslevsendt (\"apar_id\", \"date\") values(@aparid, @today)");
+            sqlAddaparid["aparid"] = apar_id;
+            sqlAddaparid["today"] = DateTime.Now.ToString("yyyy-MM-dd");
+            CurrentContext.Database.Execute(sqlAddaparid);
+            _ein01.API.WriteLog("Lagt inn i table for å ikke å sende to ganger");
+            return false;  
         }
     }
 }
