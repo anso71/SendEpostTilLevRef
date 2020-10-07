@@ -106,7 +106,14 @@ namespace HLS_SendEpostTilLevFeilRef
                                 EpostText.Append("Regnskapsavdelingen \t\r\n");
                                 EpostText.Append(description);
                                 StringBuilder epostaddress = new StringBuilder();
-                                epostaddress.Append("no-replay@");
+                                if (_client.Equals("L1"))
+                                {
+                                    epostaddress.Append("post@");
+                                }
+                                else
+                                {
+                                    epostaddress.Append("no-reply@");
+                                }
                                 epostaddress.Append(description.Replace("kommune", "").Replace(" ", "").Replace("ø", "o"));
                                 epostaddress.Append(".kommune.no");
 
